@@ -1,0 +1,4 @@
+github.com/bzed/go-whisper v0.0.0-20201021043442-fc625d04bd66 h1:WWDOYi+bv3ftPknWE1vQh/gcdPjgkZ4hVKVLvqXmzFU=
+github.com/bzed/go-whisper v0.0.0-20201021043442-fc625d04bd66/go.mod h1:8NJui4NSQk4w78vDchfETzqzb8AF2iYwDmHidsr2Z/E=
+github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1 h1:lODGHy+2Namopi4v7AeiqW106eo4QMXqj9aE8jVXcO4=
+github.com/marpaia/graphite-golang v0.0.0-20190519024811-caf161d2c2b1/go.mod h1:llZw8JbFm5CvdRrtgdjaQNlZR1bQhAWsBKtb0HTX+sw=
