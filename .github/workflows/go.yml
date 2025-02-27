@@ -1,0 +1,51 @@
+name: Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    name: Build
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+      security-events: read
+      pull-requests: read
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Build
+      run: go build -v .
+
+    - name: Test
+      run: CGO_ENABLED=1 go test -v -race ./... -covermode=atomic -coverprofile=coverage.out
+
+    #- name: Upload coverage report
+    #  uses: codecov/codecov-action@v5
+    #  env:
+    #    CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+    #  with:
+    #    files: ./coverage.out
+    #    flags: unittests
+    #    verbose: true
+
+    - name: GoLang CI Lint
+      uses: golangci/golangci-lint-action@v6
+      with:
+        version: latest

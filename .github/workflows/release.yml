@@ -1,0 +1,99 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build:
+    name: Build Executables
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      packages: read
+      security-events: read
+      pull-requests: read
+
+    strategy:
+      matrix:
+        include:
+          - { go-version: 1.24, go-os: linux, go-arch: amd64 }
+          - { go-version: 1.24, go-os: linux, go-arch: 386 }
+          - { go-version: 1.24, go-os: linux, go-arch: arm64 }
+          - { go-version: 1.24, go-os: linux, go-arch: arm }
+          - { go-version: 1.24, go-os: openbsd, go-arch: amd64 }
+          - { go-version: 1.24, go-os: openbsd, go-arch: 386 }
+          - { go-version: 1.24, go-os: openbsd, go-arch: arm64 }
+          - { go-version: 1.24, go-os: openbsd, go-arch: arm }
+          - { go-version: 1.24, go-os: darwin, go-arch: arm64 }
+          - { go-version: 1.24, go-os: freebsd, go-arch: amd64 }
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+        
+      - name: Build binary
+        run: go build -o whispher-to-graphite-${{ matrix.go-os }}-${{ matrix.go-arch }} .
+        env:
+          CGO_ENABLED: 0
+          GOOS: ${{ matrix.go-os }}
+          GOARCH: ${{ matrix.go-arch }}
+      
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: whispher-to-graphite-${{ matrix.go-os }}-${{ matrix.go-arch }}
+          path: whispher-to-graphite-${{ matrix.go-os }}-${{ matrix.go-arch }}
+
+  release:
+    name: Release
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440
+
+    permissions:
+        actions: read
+        contents: write
+        packages: write
+        security-events: read
+
+    steps:
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Conventional Changelog Action
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v6
+        with:
+          preset: conventionalcommits
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          git-user-name: ${{ github.actor }}
+          git-user-email: ${{ github.actor }}@users.noreply.github.com
+          input-file: '.github/CHANGELOG.md'
+          output-file: '.github/CHANGELOG.md'
+          release-count: 10000
+          skip-on-empty: false
+          skip-version-file: true
+
+      - name: Download workflow artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: whispher-to-graphite-*-*
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }}
+          body: ${{ steps.changelog.outputs.clean_changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: whispher-to-graphite-*-*/whispher-to-graphite-*-*
