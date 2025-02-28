@@ -1,4 +1,8 @@
-# whisper-to-graphite [![Build Status](https://api.travis-ci.org/bzed/whisper-to-graphite.svg?branch=master)](https://travis-ci.org/bzed/whisper-to-graphite/)
+# whisper-to-graphite
+
+[![Go](https://github.com/tgragnato/whisper-to-graphite/actions/workflows/go.yml/badge.svg?branch=main)](https://github.com/tgragnato/whisper-to-graphite/actions/workflows/go.yml)
+[![CodeQL](https://github.com/tgragnato/whisper-to-graphite/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/tgragnato/whisper-to-graphite/actions/workflows/codeql.yml)
+
 Read and send metrics from whisper files to graphite - Used to migrate to different graphite backends
 
 Basically this little helper calculated the metric name from the filename of a whisper file
