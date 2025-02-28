@@ -25,6 +25,6 @@ func (metric Metric) String() string {
 		"%s %s %s",
 		metric.Name,
 		metric.Value,
-		time.Unix(metric.Timestamp, 0).Format("2006-01-02 15:04:05"),
+		time.Unix(metric.Timestamp, 0).UTC().Format("2006-01-02 15:04:05"),
 	)
 }
