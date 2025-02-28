@@ -115,7 +115,7 @@ func sendWhisperData(
 	for _, dataPoint := range archiveDataPoints.Points() {
 		interval := dataPoint.Time
 		value := dataPoint.Value
-		if math.IsNaN(value) || interval < fromTs || interval > toTs {
+		if math.IsNaN(value) {
 			continue
 		}
 
