@@ -48,7 +48,8 @@ func (graphite *Graphite) Connect() error {
 		var conn net.Conn
 
 		if graphite.Protocol == "udp" {
-			udpAddr, err := net.ResolveUDPAddr("udp", address)
+			var udpAddr *net.UDPAddr
+			udpAddr, err = net.ResolveUDPAddr("udp", address)
 			if err != nil {
 				return err
 			}
