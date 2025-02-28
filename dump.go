@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/bzed/go-whisper"
+	"github.com/go-graphite/go-whisper"
 	"github.com/marpaia/graphite-golang"
 )
 
@@ -107,23 +107,23 @@ func sendWhisperData(
 	if err != nil {
 		return err
 	}
-
-	archiveDataPoints, err := whisperData.DumpDataPoints()
+	archiveDataPoints, err := whisperData.Fetch(fromTs, toTs)
 	if err != nil {
 		return err
 	}
-	metrics := make([]graphite.Metric, 0, 1000)
-	for _, dataPoint := range archiveDataPoints {
-		interval, value := dataPoint.Point()
 
+	metrics := make([]graphite.Metric, 0, 1000)
+	for _, dataPoint := range archiveDataPoints.Points() {
+		interval := dataPoint.Time
+		value := dataPoint.Value
 		if math.IsNaN(value) || interval < fromTs || interval > toTs {
 			continue
 		}
 
 		v := strconv.FormatFloat(value, 'f', 20, 64)
 		metrics = append(metrics, graphite.NewMetric(metricName, v, int64(interval)))
-
 	}
+
 	rateLimiter.limit(int64(len(metrics)))
 	for r := 1; r <= connectRetries; r++ {
 		err = graphiteConn.SendMetrics(metrics)
