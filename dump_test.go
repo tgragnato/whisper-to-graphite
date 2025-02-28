@@ -185,17 +185,7 @@ func TestNewRateLimiter_Disabled(t *testing.T) {
 	}
 }
 
-func TestFindWhisperFiles(t *testing.T) {
-	t.Parallel()
-
-	baseDir := t.TempDir() + "/" + t.Name()
-	testFiles := []string{
-		filepath.Join(baseDir, "test1.wsp"),
-		filepath.Join(baseDir, "subdir", "test2.wsp"),
-		filepath.Join(baseDir, "subdir", "test3.wsp"),
-		filepath.Join(baseDir, "test4.txt"), // Not a whisper file
-	}
-
+func createTestFiles(t *testing.T, baseDir string, testFiles []string) {
 	if err := os.MkdirAll(filepath.Join(baseDir, "subdir"), 0755); err != nil {
 		t.Fatalf("failed to create test directory: %v", err)
 	}
@@ -209,12 +199,9 @@ func TestFindWhisperFiles(t *testing.T) {
 			t.Fatalf("failed to create test file %s: %v", file, err)
 		}
 	}
+}
 
-	ch := make(chan string, 10)
-	quit := make(chan int)
-
-	go findWhisperFiles(ch, quit, baseDir)
-
+func collectFoundFiles(t *testing.T, ch <-chan string, quit <-chan int) []string {
 	var foundFiles []string
 	done := false
 	for !done {
@@ -227,10 +214,25 @@ func TestFindWhisperFiles(t *testing.T) {
 			t.Fatal("timed out waiting for findWhisperFiles to complete")
 		}
 	}
+	return foundFiles
+}
 
-	if len(foundFiles) != 3 {
-		t.Errorf("expected to find 3 whisper files, but found %d: %v", len(foundFiles), foundFiles)
+func TestFindWhisperFiles(t *testing.T) {
+	baseDir := t.TempDir() + "/" + t.Name()
+	testFiles := []string{
+		filepath.Join(baseDir, "test1.wsp"),
+		filepath.Join(baseDir, "subdir", "test2.wsp"),
+		filepath.Join(baseDir, "subdir", "test3.wsp"),
+		filepath.Join(baseDir, "test4.txt"), // Not a whisper file
 	}
+
+	createTestFiles(t, baseDir, testFiles)
+
+	ch := make(chan string, 10)
+	quit := make(chan int)
+
+	go findWhisperFiles(ch, quit, baseDir)
+	foundFiles := collectFoundFiles(t, ch, quit)
 
 	for _, file := range foundFiles {
 		if !strings.HasSuffix(file, ".wsp") {

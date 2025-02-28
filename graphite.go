@@ -90,6 +90,26 @@ func (graphite *Graphite) SendMetrics(metrics []Metric) error {
 	return graphite.sendMetrics(metrics)
 }
 
+// formatMetric formats a single metric for sending to Graphite
+func (graphite *Graphite) formatMetric(metric Metric) (string, bool) {
+	zeroed_metric := Metric{} // ignore unintialized metrics
+	if metric == zeroed_metric {
+		return "", false // ignore unintialized metrics
+	}
+
+	timestamp := metric.Timestamp
+	if timestamp == 0 {
+		timestamp = time.Now().Unix()
+	}
+
+	metric_name := metric.Name
+	if graphite.Prefix != "" {
+		metric_name = fmt.Sprintf("%s.%s", graphite.Prefix, metric.Name)
+	}
+
+	return fmt.Sprintf("%s %s %d\n", metric_name, metric.Value, timestamp), true
+}
+
 // sendMetrics is an internal function that is used to write to the TCP
 // connection in order to communicate metrics to the remote Graphite host
 func (graphite *Graphite) sendMetrics(metrics []Metric) error {
@@ -101,27 +121,21 @@ func (graphite *Graphite) sendMetrics(metrics []Metric) error {
 		}
 		return nil
 	}
-	zeroed_metric := Metric{} // ignore unintialized metrics
+
 	buf := bytes.NewBufferString("")
 	for _, metric := range metrics {
-		if metric == zeroed_metric {
-			continue // ignore unintialized metrics
-		}
-		if metric.Timestamp == 0 {
-			metric.Timestamp = time.Now().Unix()
-		}
-		metric_name := ""
-		if graphite.Prefix != "" {
-			metric_name = fmt.Sprintf("%s.%s", graphite.Prefix, metric.Name)
-		} else {
-			metric_name = metric.Name
-		}
-		if graphite.Protocol == "udp" {
-			fmt.Fprintf(graphite.conn, "%s %s %d\n", metric_name, metric.Value, metric.Timestamp)
+		formatted, valid := graphite.formatMetric(metric)
+		if !valid {
 			continue
 		}
-		buf.WriteString(fmt.Sprintf("%s %s %d\n", metric_name, metric.Value, metric.Timestamp))
+
+		if graphite.Protocol == "udp" {
+			fmt.Fprint(graphite.conn, formatted)
+			continue
+		}
+		buf.WriteString(formatted)
 	}
+
 	if graphite.Protocol == "tcp" {
 		_, err := graphite.conn.Write(buf.Bytes())
 		//fmt.Print("Sent msg:", buf.String(), "'")

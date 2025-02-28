@@ -88,6 +88,36 @@ func convertFilename(filename string, baseDirectory string) (string, error) {
 	return "", err
 }
 
+func sendMetricsWithRetry(graphiteConn *Graphite, metrics []Metric, filename string, connectRetries int) error {
+	var err error
+	for r := 1; r <= connectRetries; r++ {
+		err = graphiteConn.SendMetrics(metrics)
+		if err == nil {
+			return nil
+		}
+
+		if r == connectRetries {
+			break
+		}
+
+		// Trying to reconnect to graphite with given parameters
+		sleep := time.Duration(r) * time.Second
+		log.Printf("Failed to send metric %v to graphite: %v", filename, err.Error())
+		log.Printf("Trying to reconnect and send metric again %v times", connectRetries-r)
+		log.Printf("Sleeping for %v", sleep)
+		time.Sleep(sleep)
+
+		if err := graphiteConn.Connect(); err != nil {
+			log.Printf("Failed to reconnect to graphite: %v", err.Error())
+			time.Sleep(time.Second)
+			break
+		}
+	}
+
+	log.Printf("Failed to send metric %v after %v retries", filename, connectRetries)
+	return err
+}
+
 func sendWhisperData(
 	filename string,
 	baseDirectory string,
@@ -124,29 +154,7 @@ func sendWhisperData(
 	}
 
 	rateLimiter.limit(int64(len(metrics)))
-	for r := 1; r <= connectRetries; r++ {
-		err = graphiteConn.SendMetrics(metrics)
-		if err != nil && r != connectRetries {
-			// Trying to reconnect to graphite with given parameters
-			sleep := time.Duration(r) * time.Second
-			log.Printf("Failed to send metric %v to graphite: %v", filename, err.Error())
-			log.Printf("Trying to reconnect and send metric again %v times", connectRetries-r)
-			log.Printf("Sleeping for %v", sleep)
-			time.Sleep(sleep)
-			if err := graphiteConn.Connect(); err != nil {
-				log.Printf("Failed to reconnect to graphite: %v", err.Error())
-				time.Sleep(time.Second)
-				break
-			}
-		} else {
-			break
-		}
-	}
-	if err != nil {
-		log.Printf("Failed to send metric %v after %v retries", filename, connectRetries)
-		return err
-	}
-	return err
+	return sendMetricsWithRetry(graphiteConn, metrics, filename, connectRetries)
 }
 
 func findWhisperFiles(ch chan string, quit chan int, directory string) {
