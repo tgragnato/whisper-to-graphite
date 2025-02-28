@@ -38,7 +38,7 @@ func (graphite *Graphite) Connect() error {
 			graphite.conn.Close()
 		}
 
-		address := fmt.Sprintf("%s:%d", graphite.Host, graphite.Port)
+		address := net.JoinHostPort(graphite.Host, fmt.Sprintf("%d", graphite.Port))
 
 		if graphite.Timeout == 0 {
 			graphite.Timeout = defaultTimeout * time.Second
