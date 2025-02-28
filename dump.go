@@ -134,7 +134,11 @@ func sendWhisperData(
 			log.Printf("Trying to reconnect and send metric again %v times", connectRetries-r)
 			log.Printf("Sleeping for %v", sleep)
 			time.Sleep(sleep)
-			graphiteConn.Connect()
+			if err := graphiteConn.Connect(); err != nil {
+				log.Printf("Failed to reconnect to graphite: %v", err.Error())
+				time.Sleep(time.Second)
+				break
+			}
 		} else {
 			break
 		}
