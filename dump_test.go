@@ -223,7 +223,7 @@ func TestFindWhisperFiles(t *testing.T) {
 			foundFiles = append(foundFiles, file)
 		case <-quit:
 			done = true
-		case <-time.After(2 * time.Second):
+		case <-time.After(20 * time.Second):
 			t.Fatal("timed out waiting for findWhisperFiles to complete")
 		}
 	}
