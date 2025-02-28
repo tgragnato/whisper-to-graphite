@@ -88,7 +88,7 @@ func TestLimitWhenDisabled(t *testing.T) {
 func TestConvertFilename_Valid(t *testing.T) {
 	t.Parallel()
 
-	baseDir := t.TempDir()
+	baseDir := t.TempDir() + "/" + t.Name()
 	filePath := filepath.Join(baseDir, "sub", "dir", "metric.wsp")
 	expected := "sub.dir.metric"
 	metric, err := convertFilename(filePath, baseDir)
@@ -113,7 +113,7 @@ func TestConvertFilename_Valid(t *testing.T) {
 func TestConvertFilename_Invalid(t *testing.T) {
 	t.Parallel()
 
-	baseDir := t.TempDir()
+	baseDir := t.TempDir() + "/" + t.Name()
 	invalidPath := filepath.Join(string(filepath.Separator), "not", "in", "basedir", "metric.wsp")
 	metric, err := convertFilename(invalidPath, baseDir)
 	if err == nil {
@@ -188,7 +188,7 @@ func TestNewRateLimiter_Disabled(t *testing.T) {
 func TestFindWhisperFiles(t *testing.T) {
 	t.Parallel()
 
-	baseDir := t.TempDir()
+	baseDir := t.TempDir() + "/" + t.Name()
 	testFiles := []string{
 		filepath.Join(baseDir, "test1.wsp"),
 		filepath.Join(baseDir, "subdir", "test2.wsp"),
@@ -242,7 +242,7 @@ func TestFindWhisperFiles(t *testing.T) {
 func TestFindWhisperFilesEmptyDirectory(t *testing.T) {
 	t.Parallel()
 
-	emptyDir := t.TempDir()
+	emptyDir := t.TempDir() + "/" + t.Name()
 
 	ch := make(chan string, 10)
 	quit := make(chan int)
