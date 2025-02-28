@@ -205,7 +205,7 @@ func TestFindWhisperFiles(t *testing.T) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
 			t.Fatalf("failed to create directory %s: %v", dir, err)
 		}
-		if err := os.WriteFile(file, []byte("test"), 0644); err != nil {
+		if err := os.WriteFile(file, []byte("test"), 0600); err != nil {
 			t.Fatalf("failed to create test file %s: %v", file, err)
 		}
 	}
