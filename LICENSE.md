@@ -1,5 +1,6 @@
 The MIT License (MIT)
 
+Copyright (C) 2013 Mike Arpaia
 Copyright (c) 2017 Bernd Zeimetz <bernd@bzed.de>
 Copyright (c) 2025 Tommaso Gragnato <gragnato.tommaso@icloud.com>
 

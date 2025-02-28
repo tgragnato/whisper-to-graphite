@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/go-graphite/go-whisper"
-	"github.com/marpaia/graphite-golang"
 )
 
 type rateLimiter struct {
@@ -92,7 +91,7 @@ func convertFilename(filename string, baseDirectory string) (string, error) {
 func sendWhisperData(
 	filename string,
 	baseDirectory string,
-	graphiteConn *graphite.Graphite,
+	graphiteConn *Graphite,
 	fromTs int,
 	toTs int,
 	connectRetries int,
@@ -112,7 +111,7 @@ func sendWhisperData(
 		return err
 	}
 
-	metrics := make([]graphite.Metric, 0, 1000)
+	metrics := make([]Metric, 0, 1000)
 	for _, dataPoint := range archiveDataPoints.Points() {
 		interval := dataPoint.Time
 		value := dataPoint.Value
@@ -121,7 +120,7 @@ func sendWhisperData(
 		}
 
 		v := strconv.FormatFloat(value, 'f', 20, 64)
-		metrics = append(metrics, graphite.NewMetric(metricName, v, int64(interval)))
+		metrics = append(metrics, NewMetric(metricName, v, int64(interval)))
 	}
 
 	rateLimiter.limit(int64(len(metrics)))
@@ -179,7 +178,7 @@ func worker(ch chan string,
 	rateLimiter *rateLimiter) {
 	defer wg.Done()
 
-	graphiteConn, err := graphite.GraphiteFactory(graphiteProtocol, graphiteHost, graphitePort, "")
+	graphiteConn, err := GraphiteFactory(graphiteProtocol, graphiteHost, graphitePort, "")
 	if err != nil {
 		log.Printf("Failed to connect to graphite host with error: %v", err.Error())
 		return
