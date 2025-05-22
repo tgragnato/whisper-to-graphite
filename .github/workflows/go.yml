@@ -37,7 +37,7 @@ jobs:
       run: CGO_ENABLED=1 go test -v -race ./... -covermode=atomic -coverprofile=coverage.out
 
     - name: GoLang CI Lint
-      uses: golangci/golangci-lint-action@v6
+      uses: golangci/golangci-lint-action@v8
       with:
         version: latest
 
