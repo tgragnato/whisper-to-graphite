@@ -71,7 +71,7 @@ func convertFilename(filename string, baseDirectory string) (string, error) {
 	}
 	err = nil
 	if strings.HasPrefix(absFilename, absBaseDirectory) {
-		metric := strings.Replace(
+		metric := strings.ReplaceAll(
 			strings.TrimPrefix(
 				strings.TrimSuffix(
 					strings.TrimPrefix(
@@ -80,8 +80,7 @@ func convertFilename(filename string, baseDirectory string) (string, error) {
 					".wsp"),
 				"/"),
 			"/",
-			".",
-			-1)
+			".")
 		return metric, err
 	}
 	err = errors.New("path for whisper file does not live in BasePath")
