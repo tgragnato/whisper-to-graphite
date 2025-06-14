@@ -49,9 +49,9 @@ func main() {
 		"How many connection retries worker will make before failure. It is progressive and each next pause will be equal to 'retry * 1s'")
 	flag.Parse()
 
-	if !(*graphiteProtocol == "tcp" ||
-		*graphiteProtocol == "udp" ||
-		*graphiteProtocol == "nop") {
+	if *graphiteProtocol != "tcp" &&
+		*graphiteProtocol != "udp" &&
+		*graphiteProtocol != "nop" {
 		log.Fatalln("Graphite protocol " + *graphiteProtocol + " not supported, use tcp/udp/nop.")
 	}
 	ch := make(chan string)
