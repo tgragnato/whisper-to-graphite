@@ -1,12 +1,35 @@
+version: "2"
+
 run:
   concurrency: 4
-  timeout: 5m
+  go: "1.24"
   tests: true
   allow-parallel-runners: true
-  go: '1.24'
 
 linters:
   enable:
     - cyclop
-    - gci
     - gosec
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    
+    rules:
+
+      - linters: 
+          - staticcheck
+        path: test.go
+
+formatters:
+  enable:
+    - gci
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
